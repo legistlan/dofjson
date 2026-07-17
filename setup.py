@@ -21,6 +21,7 @@ setup(
     packages=find_packages(include=["dofjson", "dofjson.*"]),
     install_requires=[
         "requests>=2.31",
+        "pypdf>=3.0",
     ],
     extras_require={
         "test": ["pytest>=7.0"],
