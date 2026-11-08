@@ -15,9 +15,11 @@
 
 Version |dofjson_version|. This package was one of the `LegalIA
 <https://github.com/INGEOTEC/LegalIA>`_ monorepo's until 8 November 2026
-(monorepo commit ``f403872b1``); the packages it used to share a repository
-with, ``scjn``, ``nota2md``, ``md2akn`` and ``legalvec``, are documented at
-`legalia.readthedocs.io <https://legalia.readthedocs.io/en/latest/>`_.
+(monorepo commit ``f403872b1``). ``document2md`` now lives at
+`legistlan/document2md <https://github.com/legistlan/document2md>`_, documented
+at `legistlan.github.io/document2md <https://legistlan.github.io/document2md/>`_;
+the other packages it used to share a repository with, ``scjn``, ``nota2md``,
+``md2akn`` and ``legalvec``, are documented in the monorepo until they move.
 
 .. note::
 
@@ -90,7 +92,7 @@ preferring its HTML" — saves it as JSON:
 :py:func:`~dofjson.api.download_nota_imagenes`, unlike ``download_nota``,
 *always* fetches the scanned page image(s) regardless of whether HTML
 content exists too — this is what keeps the OCR path of `document2md
-<https://github.com/INGEOTEC/document2md>`_ available for every note, HTML or
+<https://github.com/legistlan/document2md>`_ available for every note, HTML or
 not:
 
 >>> paths = dofjson.download_nota_imagenes(4648702, outdir)

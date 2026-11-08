@@ -81,6 +81,10 @@ no overlapping page:
   the verified ones. `tests/test_docs.py` keeps `website/pages/cli.qmd` naming every CLI option and
   every `dofjson/*.py` module documented by exactly one `automodule`.
 
+Links to `INGEOTEC/LegalIA` (the monorepo, its issues and the `notas-archivo` release) are current
+until each moves; a link to a legistlan package or its documentation never points at INGEOTEC or
+Read the Docs, and `tests/test_docs.py` guards the dead URLs.
+
 ## Commands
 
 ```bash

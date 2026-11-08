@@ -1,4 +1,5 @@
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -48,6 +49,52 @@ class TestCliPageNamesEveryOption(unittest.TestCase):
         self.assertFalse(
             missing,
             "website/pages/cli.qmd does not name these options: " + ", ".join(missing),
+        )
+
+
+class TestNoDeadDocumentationUrls(unittest.TestCase):
+    """Documentation links of this package point at legistlan, not at pages that are gone.
+
+    The Read the Docs site of the LegalIA monorepo answers 404 and document2md
+    moved from the INGEOTEC organization to ``legistlan/document2md``; the pages
+    live on GitHub Pages (``legistlan.github.io``). Links to the ``INGEOTEC/LegalIA`` monorepo and its
+    ``notas-archivo`` release are not listed: both are still there.
+    """
+
+    # Built from fragments so this file does not flag itself.
+    DEAD = (
+        "legalia." + "readthedocs.io",
+        "readthedocs.org/projects/" + "legalia",
+        "github.com/INGEOTEC/" + "document2md",
+        "ingeotec." + "github.io",
+    )
+
+    def test_no_tracked_file_mentions_a_dead_url(self):
+        try:
+            listing = subprocess.run(
+                ["git", "ls-files", "-z"],
+                cwd=ROOT, capture_output=True, check=True,
+            ).stdout
+        except (OSError, subprocess.CalledProcessError):
+            self.skipTest("git is not available or ROOT is not a git checkout")
+
+        offenders = {}
+        for name in filter(None, listing.decode("utf-8").split("\0")):
+            path = ROOT / name
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            found = [url for url in self.DEAD if url in text]
+            if found:
+                offenders[name] = found
+
+        self.assertFalse(
+            offenders,
+            "tracked files point at dead documentation URLs: "
+            + "; ".join(f"{n}: {', '.join(u)}" for n, u in sorted(offenders.items())),
         )
 
 
