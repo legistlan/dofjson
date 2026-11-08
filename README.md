@@ -1,12 +1,16 @@
 # dofjson
 
 [![test](https://github.com/legistlan/dofjson/actions/workflows/test.yml/badge.svg)](https://github.com/legistlan/dofjson/actions/workflows/test.yml)
-[![Documentation Status](https://readthedocs.org/projects/legalia/badge/?version=latest)](https://legalia.readthedocs.io/en/latest/dofjson_api.html)
 
 Prototype client for the JSON open data service exposed by
 [sidof.segob.gob.mx](https://sidof.segob.gob.mx/datos_abiertos), the
 Secretaría de Gobernación's system for Mexico's official gazette (DOF,
 Diario Oficial de la Federación).
+
+## Documentation
+
+- **Using the package:** [legistlan.github.io/dofjson](https://legistlan.github.io/dofjson/)
+- **Extending the package:** [legistlan.github.io/dofjson/dev](https://legistlan.github.io/dofjson/dev/)
 
 The service's public docs only show sample responses, but its real,
 unauthenticated endpoints were found under `https://sidof.segob.gob.mx/dof/sidof/`:
@@ -456,6 +460,7 @@ No test touches the network: SIDOF, `www.dof.gob.mx` and GitHub are mocked.
 | `test_api.py` | `dofjson.api`: `get_nota`/`get_notas`, the respaldo, the note and edition downloads |
 | `test_archivo.py` | the daily-index archive (`--archivo`): resumption, the cache, the respaldo |
 | `test_cli.py` | the console script |
+| `test_docs.py` | the documentation's completeness: every module has its `automodule`, the CLI page names every option |
 | `test_dofjson.py` | the one-entry-point contract: everything is reachable off `dofjson` |
 | `test_dofweb.py` | recovering a day from `www.dof.gob.mx` |
 | `test_notas.py` | page inference and the editions' note lists |

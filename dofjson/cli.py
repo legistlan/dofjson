@@ -9,7 +9,7 @@ from dofjson import api, archivo, sidof, titulos
 ENDPOINT_NAMES = ["diario", "notas", "indicadores"]
 
 
-def parse_args(argv=None):
+def build_parser():
     parser = argparse.ArgumentParser(
         description="Fetch DOF (Mexico's official gazette) data from the SIDOF "
         "open data JSON service. To work with every legal provision ever "
@@ -110,7 +110,11 @@ def parse_args(argv=None):
         "dofjson.titulos.CACHE_DIR (the OS-appropriate default). "
         "'none': always fetch live, skipping the cache entirely.",
     )
-    return parser.parse_args(argv)
+    return parser
+
+
+def parse_args(argv=None):
+    return build_parser().parse_args(argv)
 
 
 def _resolver_cache_dir(valor: str | None):

@@ -28,8 +28,9 @@ jobs:
   # warning fails it) plus the documentation's worked examples run for real
   # (network included: SIDOF, www.dof.gob.mx and the notas-archivo release),
   # separate from the pytest matrix above so a SIDOF outage fails only this
-  # gate. Read the Docs' own build stays HTML-only and never touches those
-  # services (LegalIA's issue #195, inherited with the page).
+  # gate. The doctest runs only here: website.yml, which publishes the pages,
+  # builds HTML only and never touches those services (LegalIA's issue #195,
+  # inherited with the page).
   docs:
     runs-on: ubuntu-latest
     # The release listing is one request to api.github.com, where an

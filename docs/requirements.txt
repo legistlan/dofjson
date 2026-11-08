@@ -1,6 +1,6 @@
 # Build-time dependencies for the Sphinx docs, kept separate from the
 # package's own pyproject.toml. dofjson itself is installed normally by
-# .readthedocs.yaml and test.yml, pulling in its own real dependencies
+# website.yml and test.yml, pulling in its own real dependencies
 # (requests, pypdf, platformdirs), so nothing but Sphinx and its theme
 # belongs here.
 sphinx>=7

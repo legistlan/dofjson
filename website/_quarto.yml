@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: _site
+
+lang: en
+
+execute:
+  enabled: false
+
+website:
+  title: "dofjson"
+  site-url: https://legistlan.github.io/dofjson/
+  repo-url: https://github.com/legistlan/dofjson
+  navbar:
+    background: "#f9f8f4"
+    left:
+      - href: index.qmd
+        text: Home
+      - href: pages/install.qmd
+        text: Install
+      - href: pages/cli.qmd
+        text: Command line
+      - href: pages/python.qmd
+        text: Python
+      - href: pages/archive.qmd
+        text: Archive
+      - href: pages/titles.qmd
+        text: Titles
+      - href: https://legistlan.github.io/dofjson/dev/
+        text: Developer docs
+    right:
+      - icon: github
+        href: https://github.com/legistlan/dofjson
+        aria-label: GitHub
+  page-footer:
+    center: >
+      dofjson · [legistlan](https://github.com/legistlan) ·
+      Code under the Apache 2.0 license
+
+format:
+  html:
+    theme: [litera, style.scss]
+    toc: true
+    number-sections: false
+    link-external-newwindow: true

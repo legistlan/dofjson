@@ -1,0 +1,146 @@
+---
+title: "Archive"
+---
+
+`dofjson --archivo` downloads the **daily legal provisions index**
+incrementally, day by day, over a whole date range (by default from January 2,
+1917 to today). For each date it does exactly what
+`dofjson YYYY-MM-DD --endpoint notas` does and saves one JSON per day. It does
+**not** download each legal provision's content or scanned images: only the
+index.
+
+```bash
+dofjson --archivo                                      # 1917-01-02 -> today
+dofjson --archivo --desde 1980-01-01 --hasta 1980-12-31
+dofjson --archivo --pausa 1.0                          # slower (kinder to the server)
+```
+
+Output goes to `notas-archivo/` (configurable with `--outdir`), a local,
+never-committed directory, with the same per-day filenames the plain command
+produces:
+
+```
+notas-archivo/
+  .completados                 # registry of finished days (for resuming)
+  2026/
+    15072026-notas.json        # index for 2026-07-15
+    16072026-notas.json
+  1980/
+    02011980-notas.json
+```
+
+The mode is resumable and idempotent: the `.completados` registry records the
+finished days, so each run only fetches what is missing. Days that fail with
+network errors are *not* marked and get retried on the next run; days with no
+edition (holidays, weekends) *are* marked so they are not retried forever.
+"Today" is never marked, so late additions are picked up by a later run. You
+can interrupt with Ctrl-C and resume at any time.
+
+::: {.callout-note}
+The full range is about 40,000 days: a long download, meant to be run in
+parts. Start with a bounded range with `--desde` and `--hasta` if you only need
+an era. For the finished result, see the `notas-archivo` release on the
+[Titles](titles.qmd) page.
+:::
+
+## The days SIDOF loses {#the-days-sidof-loses}
+
+SIDOF does not report a day it is missing as an error. It answers **200 OK
+with every legal provision list empty**, which is also how it reports a
+Sunday, and lists the date under `FechasSinPublicacion` in
+`GET /diarios/{year}`. Most of those dates are genuine: weekends and holidays.
+Some are not.
+
+On 8 March 1999 the DOF published the decree amending articles 16, 19, 22 and
+123 of the Constitution. SIDOF has no trace of it: the day is empty, the legal
+provision's `codNota` returns `{"Nota": []}`, and its `codDiario` 404s.
+Sampling four years (1999, 2006, 2010, 2020) turned up **eight** such days:
+dates SIDOF calls unpublished that were published.
+
+`www.dof.gob.mx`, the DOF's own website, is a separate system on a separate
+database, and it has them. So an empty answer is not taken at face value: on a
+weekday, the day is put to the website before being written off.
+
+### `--respaldo`
+
+```bash
+dofjson --archivo                        # habiles (default): re-check Mon-Fri
+dofjson --archivo --respaldo todos       # also weekends (~10,000 more requests)
+dofjson --archivo --respaldo nunca       # trust SIDOF alone
+```
+
+`--respaldo` is `dofjson.get_notas(date, respaldo=...)`'s own parameter
+surfaced on the command line. The same applies to a single date, so a lost day
+is reachable directly:
+
+```bash
+dofjson 1999-03-08 --endpoint notas      # -> "fuente": "dof.gob.mx", 22 legal provisions
+```
+
+### The text of a recovered provision
+
+The text of those legal provisions is recoverable too, not just their titles:
+`dofjson.get_nota(codNota)` reads the provision's page on the website and
+returns it in the shape SIDOF uses, with the provision's HTML in
+`cadenaContenido`.
+
+```python
+dofjson.get_nota(4997808)["cadenaContenido"]   # DOF 03-03-1999
+```
+
+On a provision both sources have, the recovered HTML differs from SIDOF's only
+in escaping its accents as entities. The page carries no `codDiario`,
+`codEdicion` or `pagina`, so the image and PDF downloads stay SIDOF-only.
+
+### Which source a day came from
+
+Provenance is recorded, never inferred. Every saved day carries a `fuente` key
+(`"sidof"` or `"dof.gob.mx"`), and the registry stores it next to the date, so
+it can be audited after the fact:
+
+```
+1999-03-06	sin-edicion
+1999-03-08	dof.gob.mx
+1999-03-09	sidof
+```
+
+### What the fallback carries, and what it does not
+
+The website's daily index lists the substantive gazette (`PE`, `PJ`, `PL`,
+`OA`, `OD`) and leaves out three bulk-announcement groups, reachable on the
+site only through its POST search form:
+
+| | |
+|---|---|
+| `CV` | convocatorias for public-sector procurement |
+| `VG` | convocatorias for civil-service vacancies |
+| `AV` | avisos judiciales y generales |
+
+On days both sources have, the recovered set of `codNota` matches SIDOF's
+exactly once those three are excluded (checked on days sampled from 1999
+through 2026). A recovered day is therefore complete with respect to what the
+gazette *enacted* and short of what it *announced*, and says so in
+`notasIncompletas`.
+
+The website's per-provision index starts in January 1999; before that it holds
+only scanned images, so an older day returns an edition with no index. Those
+come back in `edicionesSinIndice` as `{"codEdicion", "codDiario"}`: no titles
+to list, but proof the gazette was published, which keeps the day off the empty
+pile.
+
+::: {.callout-warning}
+**A page served for the wrong date.** The website's index prints the date it is
+actually serving, and it has been seen answering with a different day's page.
+Every page carrying content is therefore checked against what it claims to be,
+and a mismatch raises `dofweb.PaginaDeOtroDia`. `--archivo` treats that like a
+network error and leaves the day to retry: believing it would file real legal
+provisions under the wrong day, and calling the day empty would bury it for
+good.
+:::
+
+### Repairing a published archive
+
+`scripts/reparar_notas_archivo.py` walks the published `notas-archivo` assets,
+refills the weekdays SIDOF lost from the website, and writes the rebuilt
+assets locally. It uploads nothing: a person publishes them with
+`gh release upload notas-archivo reparados/*.tgz --clobber`.

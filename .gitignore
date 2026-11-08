@@ -22,6 +22,11 @@ htmlcov/
 # Sphinx build output
 docs/build/
 
+# Quarto user site build output (the Sphinx developer site is built into _site/dev)
+website/_site/
+website/.quarto/
+**/*_files/
+
 # Local archive downloaded by `dofjson --archivo` (local only, never committed)
 /notas-archivo/
 

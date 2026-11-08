@@ -19,6 +19,13 @@ Version |dofjson_version|. This package was one of the `LegalIA
 with, ``scjn``, ``nota2md``, ``md2akn`` and ``legalvec``, are documented at
 `legalia.readthedocs.io <https://legalia.readthedocs.io/en/latest/>`_.
 
+.. note::
+
+   This page is the developer reference: every public name of the package
+   with an example that is executed and verified. Using the package (install,
+   the command line, the archive, the titles) is documented on the user site,
+   `legistlan.github.io/dofjson <https://legistlan.github.io/dofjson/>`_.
+
 :py:mod:`dofjson` is the client for SIDOF, the *Diario Oficial de la
 Federación*'s (DOF, Mexico's official gazette) undocumented JSON open-data
 service, plus a fallback onto the DOF's own website (``www.dof.gob.mx``) for
