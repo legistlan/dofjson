@@ -49,7 +49,18 @@ from pathlib import Path
 import platformdirs
 import requests
 
-RELEASES_API = "https://api.github.com/repos/INGEOTEC/LegalIA/releases/tags/notas-archivo"
+#: The GitHub release that holds the archive, and the repository that owns it
+#: as ``<owner>/<name>`` when `RELEASE_REPOSITORY_VARIABLE` is not set:
+#: ``INGEOTEC/LegalIA``, the monorepo this package was extracted from, where
+#: the release still lives. The default changes to ``legistlan/dofjson`` in
+#: the release of dofjson that follows the archive's copy there.
+RELEASE_TAG = "notas-archivo"
+DEFAULT_RELEASE_REPOSITORY = "INGEOTEC/LegalIA"
+
+#: Environment variable that names another owner of the release
+#: (``<owner>/<name>``), read at call time by `release_repository`, so a copy
+#: of the release is verified against its new owner before the default moves.
+RELEASE_REPOSITORY_VARIABLE = "DOFJSON_RELEASE_REPOSITORY"
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; DOF-JSON-Client/1.0)",
     "Accept": "application/vnd.github+json",
@@ -58,6 +69,20 @@ _HEADERS = {
 #: Environment variables a GitHub token is read from, the first one set wins
 #: -- `GH_TOKEN` before `GITHUB_TOKEN`, the `gh` CLI's own precedence.
 _TOKEN_VARIABLES = ("GH_TOKEN", "GITHUB_TOKEN")
+
+
+def release_repository() -> str:
+    """The ``<owner>/<name>`` repository whose ``notas-archivo`` release is
+    read: `RELEASE_REPOSITORY_VARIABLE` from the environment when set and not
+    blank, else `DEFAULT_RELEASE_REPOSITORY`. Read on every call, like
+    `CACHE_DIR`, so a change takes effect without a re-import."""
+    return os.environ.get(RELEASE_REPOSITORY_VARIABLE, "").strip() or DEFAULT_RELEASE_REPOSITORY
+
+
+def releases_api_url() -> str:
+    """The GitHub REST endpoint that lists the release's assets, the one
+    request this module makes to api.github.com (see `listar_assets`)."""
+    return f"https://api.github.com/repos/{release_repository()}/releases/tags/{RELEASE_TAG}"
 
 
 def _github_api_headers() -> dict:
@@ -137,7 +162,7 @@ def resuelve_cache_dir(cache_dir) -> Path | None:
 
 def listar_assets(timeout: int = 30) -> list[dict]:
     """`.tgz` assets (name + download URL) of the notas-archivo release."""
-    response = requests.get(RELEASES_API, headers=_github_api_headers(), timeout=timeout)
+    response = requests.get(releases_api_url(), headers=_github_api_headers(), timeout=timeout)
     response.raise_for_status()
     return [
         {"name": asset["name"], "url": asset["browser_download_url"]}

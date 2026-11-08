@@ -25,7 +25,7 @@ dynamic = ['version']
 test = ["pytest>=7.0"]
 
 [project.urls]
-Homepage = "https://github.com/INGEOTEC/LegalIA/tree/main/packages/dofjson"
+Homepage = "https://github.com/legistlan/dofjson"
 
 [project.scripts]
 dofjson = "dofjson.cli:main"

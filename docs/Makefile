@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = LegalIA
+SPHINXPROJ    = dofjson
 SOURCEDIR     = source
 BUILDDIR      = build
 

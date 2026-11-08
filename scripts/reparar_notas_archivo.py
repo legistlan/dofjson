@@ -13,8 +13,8 @@ Run with --dry-run first: it reports what it would change and writes nothing.
     ./scripts/reparar_notas_archivo.py --anios 1999,2006 --dry-run
     ./scripts/reparar_notas_archivo.py --anios auto --outdir reparados
 
-Only `requests` is needed; dofjson is picked up from packages/ in this
-checkout, so there is nothing to install first.
+Only `requests` is needed; dofjson is picked up from this checkout, so there
+is nothing to install first.
 
 Nothing here uploads, and no token is used. To publish the rebuilt assets,
 the only way now that the workflow which used to run both steps is gone:
@@ -33,10 +33,10 @@ from pathlib import Path
 
 import requests
 
-# Run straight from a clone, without `pip install -e packages/dofjson` first.
-# This goes at the front on purpose: a repo script should run the code in its
-# own checkout, not an older dofjson that happens to be installed system-wide.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "packages" / "dofjson"))
+# Run straight from a clone, without `pip install -e .` first. This goes at
+# the front on purpose: a repo script should run the code in its own
+# checkout, not an older dofjson that happens to be installed system-wide.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dofjson import dofweb, titulos  # noqa: E402
 

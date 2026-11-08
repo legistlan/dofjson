@@ -1,13 +1,23 @@
 :mod:`dofjson`
 ===============
 
-.. image:: https://github.com/INGEOTEC/LegalIA/actions/workflows/test.yml/badge.svg
-        :target: https://github.com/INGEOTEC/LegalIA/actions/workflows/test.yml
+.. image:: https://github.com/legistlan/dofjson/actions/workflows/test.yml/badge.svg
+        :target: https://github.com/legistlan/dofjson/actions/workflows/test.yml
 
 .. image:: https://badge.fury.io/py/dofjson.svg
         :target: https://badge.fury.io/py/dofjson
 
-Version |dofjson_version| — see :doc:`index` for the full package table.
+.. Registers the top-level package as a cross-reference target (it renders
+   nothing): every module below is documented by its own `automodule`, but the
+   package itself is only ever referred to, so without this the `:py:mod:`
+   references to it dangle under `sphinx -n`.
+.. py:module:: dofjson
+
+Version |dofjson_version|. This package was one of the `LegalIA
+<https://github.com/INGEOTEC/LegalIA>`_ monorepo's until 8 November 2026
+(monorepo commit ``f403872b1``); the packages it used to share a repository
+with, ``scjn``, ``nota2md``, ``md2akn`` and ``legalvec``, are documented at
+`legalia.readthedocs.io <https://legalia.readthedocs.io/en/latest/>`_.
 
 :py:mod:`dofjson` is the client for SIDOF, the *Diario Oficial de la
 Federación*'s (DOF, Mexico's official gazette) undocumented JSON open-data
@@ -29,7 +39,7 @@ from *another package* (``nota2md``, ``md2akn``) — the top-level
 re-exports below are the contract those callers rely on instead.
 :py:mod:`dofjson.api` is the one place inside this package allowed to depend
 on both, since it alone makes the SIDOF-or-``dofweb`` decision
-(:py:func:`~dofjson.get_nota`/:py:func:`~dofjson.get_notas`); other modules
+(:py:func:`~dofjson.api.get_nota`/:py:func:`~dofjson.api.get_notas`); other modules
 here reach into :py:mod:`dofjson.sidof` directly only for endpoints
 ``dofweb`` has no equivalent for at all — edition images/PDFs by a raw
 ``codDiario`` (:py:mod:`dofjson.cli`'s ``--imagenes-diario``/``--imagen``/
@@ -44,7 +54,7 @@ change without notice.
 
 Every example below hits the network for real — SIDOF, or the DOF website
 when SIDOF has nothing — and shares one scratch ``outdir`` so a PDF fetched
-once (e.g. the edition PDF behind :py:func:`~dofjson.download_nota_pdf`) is
+once (e.g. the edition PDF behind :py:func:`~dofjson.api.download_nota_pdf`) is
 not downloaded again by a later example that needs the same edition.
 
 >>> import datetime as dt
@@ -54,9 +64,9 @@ not downloaded again by a later example that needs the same edition.
 >>>
 >>> outdir = Path(tempfile.mkdtemp())
 
-:py:func:`~dofjson.get_nota` resolves a bare ``codNota`` to its full record,
+:py:func:`~dofjson.api.get_nota` resolves a bare ``codNota`` to its full record,
 from SIDOF or — only when SIDOF has no record of it at all — the DOF
-website, tagging the result with ``fuente`` (:py:data:`~dofjson.FUENTE_WEB`
+website, tagging the result with ``fuente`` (:py:data:`dofjson.FUENTE_WEB <dofjson.dofweb.FUENTE>`
 or SIDOF's own marker) either way:
 
 >>> nota = dofjson.get_nota(4648702)
@@ -64,13 +74,13 @@ or SIDOF's own marker) either way:
 ('sidof', 'DECRETO por el que se concede', 'S')
 
 This same note has real HTML content (``cadenaContenido``), so
-:py:func:`~dofjson.download_nota` — "whatever it takes to read this note,
+:py:func:`~dofjson.api.download_nota` — "whatever it takes to read this note,
 preferring its HTML" — saves it as JSON:
 
 >>> dofjson.download_nota(4648702, outdir)
 [...Path('.../nota-4648702.json')]
 
-:py:func:`~dofjson.download_nota_imagenes`, unlike ``download_nota``,
+:py:func:`~dofjson.api.download_nota_imagenes`, unlike ``download_nota``,
 *always* fetches the scanned page image(s) regardless of whether HTML
 content exists too — this is what keeps the OCR path of `document2md
 <https://github.com/INGEOTEC/document2md>`_ available for every note, HTML or
@@ -80,13 +90,13 @@ not:
 >>> [p.name for p in paths]
 ['nota-4648702-19900315-003-U-000.jpg', 'nota-4648702-19900315-004-U-000.jpg']
 
-:py:func:`~dofjson.download_nota_imagen_o_pdf` picks whichever of the two
+:py:func:`~dofjson.api.download_nota_imagen_o_pdf` picks whichever of the two
 the note actually has — images here, since it does:
 
 >>> dofjson.download_nota_imagen_o_pdf(4648702, outdir) == paths
 True
 
-:py:func:`~dofjson.download_nota_pdf` downloads the note's own PDF instead —
+:py:func:`~dofjson.api.download_nota_pdf` downloads the note's own PDF instead —
 the whole edition, cached in `outdir` as ``edicion-{codDiario}.pdf``, sliced
 down to just this note's page(s):
 
@@ -96,7 +106,7 @@ down to just this note's page(s):
 >>> (outdir / "edicion-200106.pdf").exists()
 True
 
-:py:func:`~dofjson.download_edicion_pdf` downloads a whole edition's PDF by
+:py:func:`~dofjson.api.download_edicion_pdf` downloads a whole edition's PDF by
 date and edition (MAT/VES/EXT) instead of by note — the same edition as
 above, so it is already cached in `outdir` and this call makes no request at
 all:
@@ -104,9 +114,9 @@ all:
 >>> dofjson.download_edicion_pdf(dt.date(1990, 3, 15), "MAT", outdir).name
 'edicion-200106.pdf'
 
-:py:func:`~dofjson.get_notas` is the day-level counterpart of ``get_nota``,
+:py:func:`~dofjson.api.get_notas` is the day-level counterpart of ``get_nota``,
 tagged with `fuente` the same way. ``cache_dir=None`` skips the
-``notas-archivo`` on-disk cache (see :doc:`index`'s package table) so this
+``notas-archivo`` on-disk cache (:py:mod:`dofjson.titulos`) so this
 example's `fuente` reflects a live SIDOF answer regardless of what a
 previous example on this page may have already cached:
 
@@ -114,7 +124,7 @@ previous example on this page may have already cached:
 >>> notas["fuente"], len(notas["NotasMatutinas"])
 ('sidof', 26)
 
-:py:func:`~dofjson.fetch_daily_legal_provisions` is the project's one
+:py:func:`~dofjson.api.fetch_daily_legal_provisions` is the project's one
 day-level entry point: the same day, as one flat list, each provision
 naming its own edition —
 
@@ -147,10 +157,10 @@ above).
 >>> indicadores["ListaIndicadores"][0]["codIndicador"]
 36431
 
-:py:func:`~dofjson.get_imagenes` lists every scanned page of an edition;
+:py:func:`~dofjson.sidof.get_imagenes` lists every scanned page of an edition;
 match a note's own ``pagina`` against this to find its image, then hand
 ``nombreArchivo`` and the edition (MAT/VES/EXT) to
-:py:func:`~dofjson.download_imagen`:
+:py:func:`~dofjson.sidof.download_imagen`:
 
 >>> imagenes = dofjson.get_imagenes(cod_diario)
 >>> primera = imagenes["imagenesFS"][0]
@@ -163,7 +173,7 @@ match a note's own ``pagina`` against this to find its image, then hand
 True
 
 There is no per-note PDF endpoint — only the whole edition's, via
-:py:func:`~dofjson.download_pdf` (:py:func:`~dofjson.download_nota_pdf` above
+:py:func:`~dofjson.sidof.download_pdf` (:py:func:`~dofjson.api.download_nota_pdf` above
 is the note-scoped, cached wrapper around this same call):
 
 >>> dest = outdir / "edicion-cruda.pdf"
@@ -185,7 +195,7 @@ every note list empty**, indistinguishable on its face from a Sunday. On
 decree amending articles 16, 19, 22 and 123 of the Constitution — the note
 is unreachable from SIDOF by any route. ``dofjson.dofweb`` reads the same
 day from the DOF's own website, a separate system with a separate database
-that does have it, and :py:func:`~dofjson.get_notas` folds the two into one
+that does have it, and :py:func:`~dofjson.api.get_notas` folds the two into one
 call: a caller only ever needs to check the `fuente` this returns, never
 which module actually answered.
 
@@ -197,7 +207,7 @@ previous run of this page:
 >>> notas["fuente"] == dofjson.FUENTE_WEB
 True
 
-:py:func:`~dofjson.notas_del_dia` (:py:mod:`dofjson.notas`, below) flattens
+:py:func:`~dofjson.notas.notas_del_dia` (:py:mod:`dofjson.notas`, below) flattens
 that same per-edition response into one list, each note carrying the day's
 `fuente` too — the recovered decree is the very first one, in publication
 order:
@@ -219,11 +229,11 @@ True
 --------------------------------------------------------------------
 
 None of these make a network request, and none care whether the day came
-from SIDOF or the website — :py:func:`~dofjson.notas_del_dia` and
-:py:func:`~dofjson.get_notas`'s own `fuente` tagging are demonstrated
+from SIDOF or the website — :py:func:`~dofjson.notas.notas_del_dia` and
+:py:func:`~dofjson.api.get_notas`'s own `fuente` tagging are demonstrated
 together above, in ``dofjson.dofweb``'s recovered-day example.
 
-:py:func:`~dofjson.infer_paginas` infers how many pages a note spans from
+:py:func:`~dofjson.notas.infer_paginas` infers how many pages a note spans from
 where the *next* note (in publication order) starts — codNota 4845455
 (pagina 21) followed by codNota 4845457 (pagina 22), both real notes from
 02-01-1980:
@@ -239,7 +249,7 @@ where the *next* note (in publication order) starts — codNota 4845455
 >>> dofjson.infer_paginas(nota, notas_del_dia)
 [21, 22]
 
-:py:func:`~dofjson.quita_notas_sin_titulo` drops title-less stub entries —
+:py:func:`~dofjson.notas.quita_notas_sin_titulo` drops title-less stub entries —
 most are duplicates of an adjacent, same-page note:
 
 >>> notas_crudas = {
@@ -266,9 +276,9 @@ current year, one per month so far), each holding every day's raw notes
 index. The count moves every month — one asset is added for each month of
 the current year, and they fold into a single yearly one in January — so the
 example below checks the order of magnitude rather than a literal.
-:py:func:`~dofjson.download_dof_assets` downloads the whole release into an
-on-disk cache — the same cache directory :py:func:`~dofjson.get_nota` and
-:py:func:`~dofjson.get_notas` read from first, before ever asking SIDOF:
+:py:func:`~dofjson.titulos.download_dof_assets` downloads the whole release into an
+on-disk cache — the same cache directory :py:func:`~dofjson.api.get_nota` and
+:py:func:`~dofjson.api.get_notas` read from first, before ever asking SIDOF:
 
 >>> assets = dofjson.download_dof_assets(log=lambda *a: None)
 >>> len(assets) > 100
@@ -276,7 +286,7 @@ True
 >>> assets[0].name
 'notas-1917.tgz'
 
-:py:func:`~dofjson.notas_de_tgz` reads one such asset — nothing is written to
+:py:func:`~dofjson.titulos.notas_de_tgz` reads one such asset — nothing is written to
 disk, everything comes straight out of its bytes already in memory — and
 yields every note it holds whole, in publication order:
 
@@ -284,19 +294,19 @@ yields every note it holds whole, in publication order:
 >>> [(n["codNota"], n["fecha"]) for n in primeras]
 [(4430696, '02-01-1917'), (4430783, '02-01-1917')]
 
-:py:func:`~dofjson.iterador_de_assets` streams every note in the whole
+:py:func:`~dofjson.titulos.iterador_de_assets` streams every note in the whole
 release, one asset after another — the building block
-:py:func:`~dofjson.legal_provisions_titles` is written over. ``itertools.islice``
-stops it early here; a real caller would let it run to completion (see
-CLAUDE.md's own note on ``nota2md download gazette-metadata`` for how the
-project usually consumes it):
+:py:func:`~dofjson.titulos.legal_provisions_titles` is written over. ``itertools.islice``
+stops it early here; a real caller would let it run to completion (as
+``nota2md download gazette-metadata`` does in the LegalIA monorepo, the
+project's usual consumer):
 
 >>> import itertools
 >>> primeras = list(itertools.islice(dofjson.iterador_de_assets(log=lambda *a: None), 3))
 >>> [n["codNota"] for n in primeras]
 [4430696, 4430783, 4430789]
 
-:py:func:`~dofjson.legal_provisions_titles` is the same stream, projected
+:py:func:`~dofjson.titulos.legal_provisions_titles` is the same stream, projected
 down to just ``codNota``/``titulo``/``fecha``/``codOrgaUno`` — the compact
 dataset every title-level analysis in the project reads:
 
@@ -306,7 +316,7 @@ dataset every title-level analysis in the project reads:
 >>> primeros_titulos[0]["codOrgaUno"]
 'PE'
 
-:py:func:`~dofjson.organigrama` builds the ``codOrgaUno`` -> `nombreCodOrgaUno`
+:py:func:`~dofjson.titulos.organigrama` builds the ``codOrgaUno`` -> `nombreCodOrgaUno`
 map by consuming the whole release once — a full pass takes several minutes
 (~1.2 million notes across every asset), too slow to run on every push, so
 this example patches :py:func:`dofjson.titulos.listar_assets` down to two of
@@ -335,7 +345,7 @@ incremental, resumable download of every day's notes index over a whole date
 range into ``<outdir>/YYYY/DDMMYYYY-notas.json``, registering completed days
 in ``<outdir>/.completados`` so a re-run only fetches what is missing. It
 applies the same SIDOF-then-``dofweb`` policy as
-:py:func:`~dofjson.get_notas` (see ``respaldo`` there) to every day in range,
+:py:func:`~dofjson.api.get_notas` (see ``respaldo`` there) to every day in range,
 day 08-03-1999 included.
 
 .. automodule:: dofjson.archivo
@@ -347,7 +357,7 @@ day 08-03-1999 included.
 ------------------------------------------------
 
 The ``dofjson`` console script. A bare date queries a day's notes index,
-folding in the ``dofweb`` fallback the same way :py:func:`~dofjson.get_notas`
+folding in the ``dofweb`` fallback the same way :py:func:`~dofjson.api.get_notas`
 does:
 
 .. code-block:: console

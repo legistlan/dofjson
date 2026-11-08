@@ -72,6 +72,8 @@ from pathlib import Path
 import requests
 
 BASE_URL = "https://dof.gob.mx"
+#: The `fuente` value of a day or a note recovered from the DOF's own website
+#: instead of SIDOF; re-exported as ``dofjson.FUENTE_WEB``.
 FUENTE = "dof.gob.mx"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DOF-JSON-Client/1.0)"}
 

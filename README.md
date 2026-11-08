@@ -1,5 +1,6 @@
 # dofjson
 
+[![test](https://github.com/legistlan/dofjson/actions/workflows/test.yml/badge.svg)](https://github.com/legistlan/dofjson/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/legalia/badge/?version=latest)](https://legalia.readthedocs.io/en/latest/dofjson_api.html)
 
 Prototype client for the JSON open data service exposed by
@@ -101,7 +102,7 @@ dofjson.download_edicion_pdf(dt.date(2026, 6, 16), "VES", outdir)
 ## Usage
 
 ```bash
-pip install -e "packages/dofjson[test]"
+pip install dofjson
 dofjson 2026-07-16 --endpoint notas --outdir output
 dofjson --pdf-edicion 16-06-2026 --edicion VES --outdir output
 ```
@@ -285,6 +286,11 @@ legal provision (`titulo` is Spanish for "title", `fecha` for "date") —
 exploratory analysis of the titles themselves, `fecha` to place each title in
 time, `codOrgaUno` to group by issuing branch.
 
+The release is owned by the `INGEOTEC/LegalIA` repository, where the archive was first built, until
+it is copied to this one; `dofjson.titulos.DEFAULT_RELEASE_REPOSITORY` names that owner, and the
+environment variable `DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at another,
+read on every call, so a copy of the release can be verified before the default moves.
+
 Nothing is written: this used to be a `titulos.jsonl.gz` file plus an
 `organigrama.json`, from before the asset cache and an iterator over it
 existed. Both do now, and the dataset was a third copy of ~1.2 million
@@ -439,7 +445,8 @@ ever holds the daily index, never a legal provision's own `cadenaContenido`
 ## Tests
 
 ```bash
-pytest packages/dofjson
+pip install -e ".[test]"
+pytest tests
 ```
 
 No test touches the network: SIDOF, `www.dof.gob.mx` and GitHub are mocked.
@@ -455,19 +462,18 @@ No test touches the network: SIDOF, `www.dof.gob.mx` and GitHub are mocked.
 | `test_sidof.py` | the SIDOF transport and its downloads |
 | `test_titulos.py` | the `notas-archivo` release reader (`legal_provisions_titles`) |
 
-Shared helpers live in `tests/conftest.py`, one definition each. To find a test that repeats another
-(same input and assertions, a subset, a parametrisable group, a helper defined in two files) run the
-read-only inventory, which parses the tests without importing them:
-
-```bash
-python scripts/test_inventory.py --suite dofjson
-```
-
-After merging or deleting tests, compare line coverage per file by the *set* of covered lines
+Shared helpers live in `tests/conftest.py`, one definition each. After merging or deleting tests, compare line coverage per file by the *set* of covered lines
 (`pytest --cov=dofjson --cov-report=json`): a line covered before and not after is a lost test.
 
 ## Development
 
 ```bash
-pytest packages/dofjson
+pip install -e ".[test]"
+pytest tests
+python scripts/check_package_versions.py   # the local version is one step ahead of PyPI
 ```
+
+`dofjson` was one package of the [LegalIA](https://github.com/INGEOTEC/LegalIA) monorepo,
+`packages/dofjson`, until 8 November 2026 (monorepo commit `f403872b1`); this repository carries
+that history, filtered to the package's own files, so `git log` and `git blame` reach back to the
+first commit. A `#N` in a commit message is an issue of the monorepo.
