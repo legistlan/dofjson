@@ -1,0 +1,105 @@
+---
+title: "Python"
+---
+
+The code blocks on this site are illustrative and are not executed: every
+example would call SIDOF or the DOF website. The
+[developer docs](https://legistlan.github.io/dofjson/dev/) hold the live,
+verified examples.
+
+## One entry point
+
+`dofjson.sidof` talks to SIDOF, the preferred source, which exposes a REST
+API; `dofjson.dofweb` talks to the DOF's own website, used to recover the days
+and legal provisions SIDOF is missing outright. A caller never needs to import
+either, or to decide which of the two has what it needs: every function they
+offer is reachable straight off the `dofjson` package.
+
+```python
+import dofjson
+
+dofjson.get_nota(4997808)               # SIDOF has it, or the website does
+dofjson.get_notas(dt.date(1999, 3, 8))  # a day SIDOF lost, recovered from the website
+dofjson.download_nota_pdf(4997808, outdir)
+```
+
+## Reading a legal provision or a day
+
+`get_nota(codNota)` and `get_notas(date)` try SIDOF first and fall back to the
+website automatically. The result says where it came from in `fuente`:
+`dofjson.titulos.FUENTE_PREDETERMINADA` (`"sidof"`) or `dofjson.FUENTE_WEB`
+(`"dof.gob.mx"`).
+
+```python
+dofjson.get_nota(4997808)["cadenaContenido"]      # the legal provision's HTML text
+dofjson.get_notas(date)                           # respaldo="todos" by default
+dofjson.get_notas(date, respaldo="nunca")         # trust SIDOF alone
+```
+
+A single call to the library defaults to `respaldo="todos"` (always
+double-check an empty day), unlike the command line's `--archivo`, which
+defaults to `"habiles"`: a one-off query has no 40,000-day request budget to
+mind. A legal provision the website has no HTML for comes back with
+`existeHtml` `"N"`, and an unknown `codNota` with `"Nota": []`, as SIDOF
+answers.
+
+## Downloads
+
+```python
+dofjson.download_nota(4997808, outdir)
+dofjson.download_nota_imagenes(4997808, outdir)
+dofjson.download_nota_pdf(4997808, outdir)
+dofjson.download_nota_imagen_o_pdf(4997808, outdir)
+dofjson.download_edicion_pdf(dt.date(2026, 6, 16), "VES", outdir)
+```
+
+- `download_nota` saves a legal provision's JSON.
+- `download_nota_imagenes` downloads its scanned page image(s).
+- `download_nota_pdf` produces the provision as its own PDF: the edition PDF
+  (there is no per-provision PDF endpoint) sliced to the provision's pages with
+  `pypdf`. The edition PDF is cached in `outdir` as `edicion-{codDiario}.pdf`,
+  so slicing another provision from the same edition does not fetch it again.
+- `download_nota_imagen_o_pdf` tries the page image first and falls back to the
+  whole, uncut edition PDF, cached the same way. It is meant for bulk-downloading
+  everything a large batch of provisions without HTML needs into one `outdir`.
+- `download_edicion_pdf` downloads a whole edition's PDF given only its date and
+  edition (`MAT`, `VES` or `EXT`).
+
+These downloads only ever fetch from SIDOF: the website carries no
+per-provision images, PDFs or page numbers. They still resolve a bare
+`codNota` through `get_nota()`, so a provision SIDOF has no record of raises a
+clear error.
+
+## Plain passthroughs
+
+`get_diario`, `get_indicadores`, `get_imagenes`, `download_pdf` and
+`download_imagen` have nothing to resolve and call SIDOF directly.
+
+## A day as one flat sequence
+
+`get_notas(date)` answers the day split into its three editions
+(`NotasMatutinas`, `NotasVespertinas`, `NotasExtraordinarias`, plus the
+day-level `fuente`), which is the wire shape of both sources. To go through the
+whole day without knowing those key names, and without losing which edition a
+note came from:
+
+```python
+for nota in dofjson.fetch_daily_legal_provisions(dt.date(2026, 7, 15)):
+    print(nota["edicion"], nota["codNota"], nota["titulo"])   # MAT, then VES, then EXT
+```
+
+It takes either the date or a response already in hand, in which case nothing
+is fetched. Every note is a shallow copy of the original, ordered edition-first
+and by `codNota` inside an edition, carrying two extra keys: `edicion` and the
+day's `fuente`. An empty day gives `[]`. The pure half of this, for a response
+already in hand, is `dofjson.notas_del_dia(notas)`.
+
+## Helpers over a fetched day
+
+- `infer_paginas(nota, notas_del_dia)` infers which page(s) a note occupies,
+  from the fact that notes are published one after another: if the next note
+  starts on the same page, this one is confined to it; if it starts later, this
+  one is assumed to span through that page.
+- `quita_notas_sin_titulo(notas_del_dia)` drops the notes with no `titulo` from
+  a `get_notas()` response, to build a clean per-day index. Do not use it on the
+  response passed into `infer_paginas`.

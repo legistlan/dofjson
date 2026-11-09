@@ -63,14 +63,27 @@ issue of the monorepo, where those issues live.
 
 ## Documentation
 
-`docs/source/index.rst` is the Read the Docs page, the **developer reference**: every name in
-`__all__`, every public method of an exported class and every CLI option gets a verified example,
-a live doctest run by the `docs` job of `test.yml` (network allowed); an exception is written on
-the page itself, naming the pytest suite that verifies the behaviour instead. Private helpers
-(leading underscore) get a full docstring and appear through `:private-members:` but need no
-example. The HTML build is strict (`-n -W`). Read the Docs builds HTML only and never touches the
-network. Today the page is also published as `dofjson_api.html` of `legalia.readthedocs.io`, from
-the monorepo, until this repository has a Read the Docs project of its own.
+One GitHub Pages site, `https://legistlan.github.io/dofjson/`, built and deployed by
+`.github/workflows/website.yml` (the official Pages artifact flow, Pages source "GitHub Actions",
+no `gh-pages` branch; pull requests only build, a push to `main` deploys). It has two halves with
+no overlapping page:
+
+- `docs/source/index.rst`, published under `/dev/`, is the **developer reference**: every name in
+  `__all__`, every public method of an exported class and every CLI option gets a verified example,
+  a live doctest run by the `docs` job of `test.yml` (network allowed); an exception is written on
+  the page itself, naming the pytest suite that verifies the behaviour instead. Private helpers
+  (leading underscore) get a full docstring and appear through `:private-members:` but need no
+  example. The HTML build is strict (`-n -W`). The strict build and the doctest stay in `test.yml`'s
+  `docs` job as the pull request gate; `website.yml` builds HTML only and never touches the network.
+- `website/` is the Quarto **user site** at the root, in English, written from the README:
+  install, command line, Python, archive, titles. `execute.enabled: false` (every example would
+  hit SIDOF), no API reference; its code blocks are illustrative and the developer reference holds
+  the verified ones. `tests/test_docs.py` keeps `website/pages/cli.qmd` naming every CLI option and
+  every `dofjson/*.py` module documented by exactly one `automodule`.
+
+Links to `INGEOTEC/LegalIA` (the monorepo, its issues and the `notas-archivo` release) are current
+until each moves; a link to a legistlan package or its documentation never points at INGEOTEC or
+Read the Docs, and `tests/test_docs.py` guards the dead URLs.
 
 ## Commands
 
@@ -79,6 +92,7 @@ pip install -e ".[test]"
 pytest tests                                                              # no test touches the network
 python -m sphinx -n -W --keep-going -b html docs/source docs/build/html   # the strict build
 python -m sphinx -b doctest docs/source docs/build/doctest                # network: SIDOF, the website, the release
+quarto render website                                                     # the user site, into website/_site
 python scripts/check_package_versions.py                                  # one step ahead of PyPI
 ```
 

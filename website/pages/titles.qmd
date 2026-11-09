@@ -1,0 +1,118 @@
+---
+title: "Titles"
+---
+
+`dofjson.legal_provisions_titles()` yields a small `codNota`, `titulo`,
+`fecha` and `codOrgaUno` record for every legal provision ever published,
+sourced from the
+[`notas-archivo` GitHub release](https://github.com/INGEOTEC/LegalIA/releases/tag/notas-archivo).
+`titulo` is Spanish for "title" and `fecha` for "date": `codNota` is what to
+fetch the provision's full content with later, `titulo` serves exploratory
+analysis of the titles, `fecha` places each title in time, and `codOrgaUno`
+groups by issuing branch.
+
+```python
+import dofjson
+
+for titulo in dofjson.legal_provisions_titles():
+    ...
+# titulo == {"codNota": 4434476, "titulo": "CIRCULAR nº. 164, ...",
+#            "fecha": "23-03-1917", "codOrgaUno": None}
+```
+
+## The release
+
+The release holds one `notas-YYYY.tgz` per closed year, 1917 to last year, and
+one `notas-YYYY-MM.tgz` per month of the current year. Each archive holds one
+`DDMMYYYY-notas.json` per day, in the same shape [`--archivo`](archive.qmd)
+writes. A monthly workflow builds the previous month on the 1st and folds a
+closed year into one asset on 1 January.
+
+The release is owned by the `INGEOTEC/LegalIA` repository, where the archive
+was first built, until it is copied to this one. The environment variable
+`DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at another
+owner, and is read on every call, so a copy of the release can be verified
+before the default moves.
+
+Listing the release's assets is one request to the GitHub API, where an
+unauthenticated address gets 60 requests an hour. When `GH_TOKEN` (or
+`GITHUB_TOKEN`) is set, that request carries it as a bearer token; without one
+nothing changes. The asset downloads themselves are outside that quota.
+
+## Downloading the assets
+
+`download_dof_assets` downloads the release into a cache, independently of
+reading it. Populate it once and every pass afterwards is local:
+
+```python
+from dofjson.titulos import download_dof_assets
+
+download_dof_assets()               # -> dofjson.titulos.CACHE_DIR
+download_dof_assets(Path("cache"))  # -> one notas-YYYY[-MM].tgz per asset, here instead
+```
+
+Nothing but these assets is written. `cache_dir` resolves the same way
+everywhere in the package: left out, it is the package-wide
+`dofjson.titulos.CACHE_DIR`; a directory reads that one; and an explicit
+`cache_dir=None` skips the disk and downloads every asset straight into memory
+(`SIN_CACHE_DIR` is the sentinel that tells "nothing passed" from "skip").
+
+```python
+dofjson.legal_provisions_titles(Path("cache"))       # a cache of your own
+dofjson.legal_provisions_titles(cache_dir=None)      # nothing on disk
+```
+
+The `codOrgaUno` to `nombreCodOrgaUno` map comes out of the same pass:
+`dofjson.organigrama()` makes that pass on its own, or pass your own dict as
+`organigrama=` to get both at once. The titles stream is not re-iterable: a
+second pass re-reads the assets, so call it again or materialize what you need.
+
+## Reading a whole asset, not just titles
+
+`legal_provisions_titles` keeps four fields per titled provision.
+`dofjson.notas_de_tgz` is the general form: every field a note carries, in
+publication order (by day, then by `codNota` within the day).
+
+```python
+for nota in dofjson.notas_de_tgz(Path("cache/notas-1980.tgz").read_bytes()):
+    ...  # nota carries every field SIDOF or the website published it with
+```
+
+`dofjson.iterador_de_assets` is `notas_de_tgz` over the whole release: it
+downloads, or reads from `cache_dir`, every `notas-YYYY[-MM].tgz` in turn and
+yields every note across all of them, never holding more than one asset's
+notes in memory. `legal_provisions_titles` is built on it.
+
+```python
+for nota in dofjson.iterador_de_assets():                # every note ever published
+    ...
+for nota in dofjson.iterador_de_assets(Path("cache")):   # reuse a cache_dir on disk
+    ...
+```
+
+## Fewer calls to SIDOF with `cache_dir`
+
+A day's notes index, `dofjson.get_notas(date)`, is exactly what a
+`notas-archivo` asset holds for an already-published date. So when a
+`cache_dir` populated by `download_dof_assets` has that date, it is read off
+disk instead of asking SIDOF or the website at all:
+
+```python
+from dofjson import api
+
+api.get_notas(date, cache_dir=Path("cache"))   # a cache hit skips the network entirely
+```
+
+Leaving `cache_dir` out still gets the cache, through `CACHE_DIR`; pass
+`cache_dir=None` to skip it for just that call. The same default flows through
+`dofjson --archivo` and the command line's single-date query:
+
+```bash
+dofjson --archivo --cache-dir cache        # a specific directory
+dofjson 1980-01-02 --endpoint notas        # no --cache-dir: uses CACHE_DIR
+dofjson 1980-01-02 --endpoint notas --cache-dir none  # always fetch live
+```
+
+`dofjson.get_nota(codNota)` has no matching `cache_dir`: the archive only ever
+holds the daily index, never a provision's own `cadenaContenido`, which always
+takes the one-note request `get_nota()` already makes.

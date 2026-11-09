@@ -1,0 +1,80 @@
+---
+title: "dofjson"
+subtitle: "Mexico's official gazette as JSON"
+toc: false
+number-sections: false
+---
+
+::: {.home-lead}
+**dofjson** is the client for SIDOF, the JSON open-data service of Mexico's
+official gazette (DOF, *Diario Oficial de la Federación*), with a fallback
+onto the DOF's own website for the days SIDOF loses. It is also the reader of
+the `notas-archivo` release: the compact record of every legal provision ever
+published.
+:::
+
+A DOF *nota* is a legal provision, and the DOF is the official source of legal
+text. SIDOF (`sidof.segob.gob.mx`) is the Secretaría de Gobernación's system
+for the gazette; its JSON endpoints are undocumented, and it reports a day it
+has lost as `200 OK` with empty lists, exactly as it reports a Sunday.
+`dofjson.get_nota` and `dofjson.get_notas` try SIDOF first and fall back to
+`www.dof.gob.mx` on their own, so a caller never needs to know which source
+answered: the `fuente` field of every result says. The package writes no
+dataset of its own, and `nota2md` reaches the DOF through it.
+
+::: {.fronts}
+::: {.front}
+### One entry point
+
+Every function is reachable off `dofjson`: SIDOF first, the DOF website for
+the days SIDOF loses.
+:::
+::: {.front}
+### A resumable archive
+
+`dofjson --archivo` downloads one JSON per day since 1917, and picks up where
+it stopped when interrupted.
+:::
+::: {.front}
+### Every title since 1917
+
+`legal_provisions_titles` streams the `codNota`, title and date of every legal
+provision from the `notas-archivo` release, cached locally.
+:::
+:::
+
+## Quickstart
+
+```bash
+pip install dofjson
+```
+
+```bash
+dofjson 2026-07-16 --endpoint notas --outdir output
+dofjson --pdf-edicion 16-06-2026 --edicion VES --outdir output
+dofjson --archivo --desde 1980-01-01 --hasta 1980-12-31
+```
+
+```python
+import dofjson
+
+dofjson.get_nota(4997808)               # SIDOF has it, or the website does
+dofjson.get_notas(dt.date(1999, 3, 8))  # a day SIDOF lost, recovered from the website
+dofjson.download_nota_pdf(4997808, outdir)
+```
+
+See [Install](pages/install.qmd) for what the package needs,
+[Command line](pages/cli.qmd) and [Python](pages/python.qmd) for the two ways
+to query the gazette, [Archive](pages/archive.qmd) for the whole-history
+downloader and the days SIDOF loses, and [Titles](pages/titles.qmd) for the
+`notas-archivo` release. Extending the package itself is documented
+separately, on the
+[developer docs](https://legistlan.github.io/dofjson/dev/).
+
+## Colophon {.unnumbered}
+
+This site was built by the dofjson maintainers together with Claude,
+Anthropic's coding assistant, through
+[Claude Code](https://claude.com/claude-code): the assistant helped set up
+the Quarto site and draft these pages from the README, with the authors
+reviewing and validating every change before it was committed.

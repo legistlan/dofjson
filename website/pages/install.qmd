@@ -1,0 +1,43 @@
+---
+title: "Install"
+---
+
+dofjson needs Python 3.10 or newer.
+
+```bash
+pip install dofjson
+```
+
+## What it depends on
+
+| Package | What it is for |
+|---|---|
+| `requests` | every request to SIDOF, to `www.dof.gob.mx` and to GitHub |
+| `pypdf` | slicing a whole edition's PDF down to the pages of one legal provision |
+| `platformdirs` | picking the per-user cache directory |
+
+## The shipped certificate chain
+
+`www.dof.gob.mx` serves its leaf certificate without the intermediate that
+signs it, so verification fails with "unable to get local issuer certificate"
+on any client that does not chase the issuer itself. The missing GoDaddy
+intermediate, and its root, ship inside the package as
+`dofjson/certs/dof-gob-mx-chain.pem`. The system trust store is tried first
+and the bundled chain only on failure. Certificate verification is never
+disabled.
+
+## The cache directory
+
+The `notas-archivo` assets that `download_dof_assets` writes, and that every
+reader looks at first, live in `dofjson.titulos.CACHE_DIR`: an OS-appropriate
+per-user directory, `~/.cache/dofjson` on Linux. It is the package's own and
+is never shared with another package's. See [Titles](titles.qmd).
+
+## Development install
+
+```bash
+pip install -e ".[test]"
+pytest tests
+```
+
+No test touches the network: SIDOF, `www.dof.gob.mx` and GitHub are mocked.
