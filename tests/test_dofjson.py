@@ -5,6 +5,7 @@ dofjson.sidof or dofjson.dofweb directly. These tests lock that surface in,
 so a future addition to sidof/dofweb that forgets to re-export it here
 doesn't quietly reintroduce the need to reach into a submodule."""
 import unittest
+from pathlib import Path
 
 import dofjson
 from dofjson import api, dofweb, notas, sidof
@@ -92,6 +93,33 @@ class TestDofjsonSurface(unittest.TestCase):
             *TestNotasPassthroughEntryPoints.PASSTHROUGHS,
         }
         self.assertEqual(set(dofjson.__all__), esperado)
+
+
+try:
+    import tomllib
+except ImportError:  # Python 3.10 has no tomllib; no dependency is added for it.
+    tomllib = None
+
+
+@unittest.skipIf(tomllib is None, "tomllib needs Python 3.11+")
+class TestUvCacheKeys(unittest.TestCase):
+    """The version is dynamic (dofjson.__version__), so uv only rebuilds the
+    editable install on a version bump if dofjson/__init__.py is a cache key."""
+
+    ROOT = Path(__file__).resolve().parent.parent
+
+    def cache_keys(self):
+        with open(self.ROOT / "pyproject.toml", "rb") as f:
+            return tomllib.load(f)["tool"]["uv"]["cache-keys"]
+
+    def test_version_source_and_build_files_are_cache_keys(self):
+        keys = self.cache_keys()
+        for archivo in ("dofjson/__init__.py", "pyproject.toml", "setup.py"):
+            self.assertIn({"file": archivo}, keys)
+
+    def test_every_cache_key_names_an_existing_file(self):
+        for key in self.cache_keys():
+            self.assertTrue((self.ROOT / key["file"]).is_file(), key)
 
 
 if __name__ == "__main__":

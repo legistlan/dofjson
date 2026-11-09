@@ -43,3 +43,8 @@ dofjson = ["certs/*.pem"]
 
 [tool.setuptools.dynamic]
 version = {attr = 'dofjson.__version__'}
+
+[tool.uv]
+# The version is dynamic (read from dofjson/__init__.py); without it in the
+# cache keys uv would not rebuild the editable install when __version__ bumps.
+cache-keys = [{ file = "pyproject.toml" }, { file = "setup.py" }, { file = "dofjson/__init__.py" }]

@@ -104,6 +104,9 @@ python scripts/check_package_versions.py                                  # one 
   `__version__`, builds, checks and uploads with the organization's `TWINE` secret.
 - Publish order across repositories: `dofjson` before the `nota2md` release that raises its
   floor. A published package never carries a URL dependency.
+- `[tool.uv] cache-keys` in `pyproject.toml` lists `dofjson/__init__.py` so uv rebuilds the
+  editable install when `__version__` changes (the version is dynamic). Development-only, not a
+  release.
 
 ## Git workflow: branches, issues and PRs
 
