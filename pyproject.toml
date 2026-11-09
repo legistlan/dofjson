@@ -26,6 +26,9 @@ test = ["pytest>=7.0"]
 
 [project.urls]
 Homepage = "https://github.com/legistlan/dofjson"
+Documentation = "https://legistlan.github.io/dofjson/"
+Source = "https://github.com/legistlan/dofjson"
+Issues = "https://github.com/legistlan/dofjson/issues"
 
 [project.scripts]
 dofjson = "dofjson.cli:main"

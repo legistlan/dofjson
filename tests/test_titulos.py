@@ -67,34 +67,35 @@ class TestListarAssets(unittest.TestCase):
 
 
 class TestReleaseRepository(unittest.TestCase):
-    """The release's owner is `INGEOTEC/LegalIA` until the archive is copied to
-    this package's own repository; `DOFJSON_RELEASE_REPOSITORY` points the
-    lookup at another owner meanwhile, so the copy can be verified first."""
+    """The release's owner is this package's own repository, `legistlan/dofjson`;
+    `DOFJSON_RELEASE_REPOSITORY` points the lookup at a mirror of the release."""
 
-    def test_the_default_owner_is_the_monorepo_where_the_release_lives(self):
+    def test_the_default_owner_is_this_repository(self):
+        for value in ("", "   "):
+            with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": value}):
+                self.assertEqual(titulos.release_repository(), "legistlan/dofjson")
         with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": ""}):
-            self.assertEqual(titulos.release_repository(), "INGEOTEC/LegalIA")
-            self.assertEqual(
-                titulos.releases_api_url(),
-                "https://api.github.com/repos/INGEOTEC/LegalIA/releases/tags/notas-archivo",
-            )
-
-    def test_the_variable_names_another_owner(self):
-        with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": " legistlan/dofjson "}):
-            self.assertEqual(titulos.release_repository(), "legistlan/dofjson")
             self.assertEqual(
                 titulos.releases_api_url(),
                 "https://api.github.com/repos/legistlan/dofjson/releases/tags/notas-archivo",
             )
 
+    def test_the_variable_names_a_mirror(self):
+        with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": " example/mirror "}):
+            self.assertEqual(titulos.release_repository(), "example/mirror")
+            self.assertEqual(
+                titulos.releases_api_url(),
+                "https://api.github.com/repos/example/mirror/releases/tags/notas-archivo",
+            )
+
     @patch("dofjson.titulos.requests.get")
     def test_listar_assets_asks_the_owner_named_at_call_time(self, mock_get):
         mock_get.return_value = Mock(json=lambda: {"assets": []})
-        with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": "legistlan/dofjson"}):
+        with patch.dict(os.environ, {"DOFJSON_RELEASE_REPOSITORY": "example/mirror"}):
             titulos.listar_assets()
         self.assertEqual(
             mock_get.call_args.args[0],
-            "https://api.github.com/repos/legistlan/dofjson/releases/tags/notas-archivo",
+            "https://api.github.com/repos/example/mirror/releases/tags/notas-archivo",
         )
 
 

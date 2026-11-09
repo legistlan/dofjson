@@ -281,7 +281,7 @@ inside the range where titles can actually be recovered.
 `dofjson.legal_provisions_titles()` yields a small `codNota` + `titulo` +
 `fecha` + `codOrgaUno` record for every legal provision ever published,
 sourced from the [`notas-archivo` GitHub
-release](https://github.com/INGEOTEC/LegalIA/releases/tag/notas-archivo)
+release](https://github.com/legistlan/dofjson/releases/tag/notas-archivo)
 (one `notas-YYYY.tgz` per year, 1917 to last year, plus one
 `notas-YYYY-MM.tgz` per month of the current year). Each asset's daily JSON
 indexes are read in turn and only those four fields kept from every titled
@@ -290,10 +290,9 @@ legal provision (`titulo` is Spanish for "title", `fecha` for "date") —
 exploratory analysis of the titles themselves, `fecha` to place each title in
 time, `codOrgaUno` to group by issuing branch.
 
-The release is owned by the `INGEOTEC/LegalIA` repository, where the archive was first built, until
-it is copied to this one; `dofjson.titulos.DEFAULT_RELEASE_REPOSITORY` names that owner, and the
-environment variable `DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at another,
-read on every call, so a copy of the release can be verified before the default moves.
+The release is owned by this repository (`dofjson.titulos.DEFAULT_RELEASE_REPOSITORY`). The
+environment variable `DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at a mirror
+of the release held elsewhere, and is read on every call.
 
 Nothing is written: this used to be a `titulos.jsonl.gz` file plus an
 `organigrama.json`, from before the asset cache and an iterator over it
@@ -478,7 +477,7 @@ pytest tests
 python scripts/check_package_versions.py   # the local version is one step ahead of PyPI
 ```
 
-`dofjson` was one package of the [LegalIA](https://github.com/INGEOTEC/LegalIA) monorepo,
-`packages/dofjson`, until 8 November 2026 (monorepo commit `f403872b1`); this repository carries
-that history, filtered to the package's own files, so `git log` and `git blame` reach back to the
-first commit. A `#N` in a commit message is an issue of the monorepo.
+`dofjson` was `packages/dofjson` of a monorepo until 8 November 2026 (monorepo commit
+`f403872b1`); this repository carries that history, filtered to the package's own files, so
+`git log` and `git blame` reach back to the first commit. A `#N` in a commit message is an issue
+of that monorepo.

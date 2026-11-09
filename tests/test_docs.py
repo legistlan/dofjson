@@ -53,23 +53,21 @@ class TestCliPageNamesEveryOption(unittest.TestCase):
 
 
 class TestNoDeadDocumentationUrls(unittest.TestCase):
-    """Documentation links of this package point at legistlan, not at pages that are gone.
+    """No tracked file names the organization or the monorepo this package came from.
 
-    The Read the Docs site of the LegalIA monorepo answers 404 and document2md
-    moved from the INGEOTEC organization to ``legistlan/document2md``; the pages
-    live on GitHub Pages (``legistlan.github.io``). Links to the ``INGEOTEC/LegalIA`` monorepo and its
-    ``notas-archivo`` release are not listed: both are still there.
+    Links, badges, comments and prose point at legistlan (this repository, its
+    GitHub Pages site and its ``notas-archivo`` release); provenance is said
+    without naming ("the monorepo this package was extracted from"). The check
+    is case-insensitive and also catches the two bare words.
     """
 
     # Built from fragments so this file does not flag itself.
     DEAD = (
-        "legalia." + "readthedocs.io",
-        "readthedocs.org/projects/" + "legalia",
-        "github.com/INGEOTEC/" + "document2md",
-        "ingeotec." + "github.io",
+        "legal" + "ia",
+        "ingeo" + "tec",
     )
 
-    def test_no_tracked_file_mentions_a_dead_url(self):
+    def test_no_tracked_file_names_the_former_owner(self):
         try:
             listing = subprocess.run(
                 ["git", "ls-files", "-z"],
@@ -87,13 +85,14 @@ class TestNoDeadDocumentationUrls(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
                 continue
-            found = [url for url in self.DEAD if url in text]
+            lowered = text.lower()
+            found = [word for word in self.DEAD if word in lowered]
             if found:
                 offenders[name] = found
 
         self.assertFalse(
             offenders,
-            "tracked files point at dead documentation URLs: "
+            "tracked files name the former organization or monorepo: "
             + "; ".join(f"{n}: {', '.join(u)}" for n, u in sorted(offenders.items())),
         )
 

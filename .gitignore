@@ -30,6 +30,9 @@ website/.quarto/
 # Local archive downloaded by `dofjson --archivo` (local only, never committed)
 /notas-archivo/
 
+# Local copy of the release downloaded by scripts/copiar_notas_archivo.py (never committed)
+/notas-archivo-copia/
+
 # Local output from dofjson runs (downloaded notes, PDFs, images)
 /output/
 
