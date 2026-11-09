@@ -13,13 +13,12 @@
    references to it dangle under `sphinx -n`.
 .. py:module:: dofjson
 
-Version |dofjson_version|. This package was one of the `LegalIA
-<https://github.com/INGEOTEC/LegalIA>`_ monorepo's until 8 November 2026
+Version |dofjson_version|. This package was one of a monorepo's until 8 November 2026
 (monorepo commit ``f403872b1``). ``document2md`` now lives at
 `legistlan/document2md <https://github.com/legistlan/document2md>`_, documented
 at `legistlan.github.io/document2md <https://legistlan.github.io/document2md/>`_;
 the other packages it used to share a repository with, ``scjn``, ``nota2md``,
-``md2akn`` and ``legalvec``, are documented in the monorepo until they move.
+``md2akn`` and ``legalvec``, are documented there until they move.
 
 .. note::
 
@@ -307,7 +306,7 @@ yields every note it holds whole, in publication order:
 release, one asset after another — the building block
 :py:func:`~dofjson.titulos.legal_provisions_titles` is written over. ``itertools.islice``
 stops it early here; a real caller would let it run to completion (as
-``nota2md download gazette-metadata`` does in the LegalIA monorepo, the
+``nota2md download gazette-metadata`` does, the
 project's usual consumer):
 
 >>> import itertools

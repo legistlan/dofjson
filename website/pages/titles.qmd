@@ -5,7 +5,7 @@ title: "Titles"
 `dofjson.legal_provisions_titles()` yields a small `codNota`, `titulo`,
 `fecha` and `codOrgaUno` record for every legal provision ever published,
 sourced from the
-[`notas-archivo` GitHub release](https://github.com/INGEOTEC/LegalIA/releases/tag/notas-archivo).
+[`notas-archivo` GitHub release](https://github.com/legistlan/dofjson/releases/tag/notas-archivo).
 `titulo` is Spanish for "title" and `fecha` for "date": `codNota` is what to
 fetch the provision's full content with later, `titulo` serves exploratory
 analysis of the titles, `fecha` places each title in time, and `codOrgaUno`
@@ -28,11 +28,9 @@ one `notas-YYYY-MM.tgz` per month of the current year. Each archive holds one
 writes. A monthly workflow builds the previous month on the 1st and folds a
 closed year into one asset on 1 January.
 
-The release is owned by the `INGEOTEC/LegalIA` repository, where the archive
-was first built, until it is copied to this one. The environment variable
-`DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at another
-owner, and is read on every call, so a copy of the release can be verified
-before the default moves.
+The release is owned by this repository. The environment variable
+`DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`) points the lookup at a mirror
+of the release held elsewhere, and is read on every call.
 
 Listing the release's assets is one request to the GitHub API, where an
 unauthenticated address gets 60 requests an hour. When `GH_TOKEN` (or

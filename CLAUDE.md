@@ -15,10 +15,10 @@ legal provision. The DOF is the official source of legal text.
 It is one package of the Legistlan project (the `legistlan` organization), the one every other
 reaches the DOF through: `nota2md` requires `dofjson>=0.5.0` and re-exports
 `fetch_daily_legal_provisions` and `legal_provisions_titles`; `dofjson` itself imports no sibling.
-It was `packages/dofjson` of the `INGEOTEC/LegalIA` monorepo until 8 November 2026 (monorepo commit
-`f403872b1`); this repository is that history filtered to the package's files, so `git log` and
-`git blame` reach the first commit. A `#N` in a commit message, a comment or a docstring is an
-issue of the monorepo, where those issues live.
+It was `packages/dofjson` of a monorepo until 8 November 2026 (monorepo commit `f403872b1`); this
+repository is that history filtered to the package's files, so `git log` and `git blame` reach the
+first commit. A `#N` in a commit message, a comment or a docstring is an issue of that monorepo,
+where those issues live.
 
 ## The package
 
@@ -46,13 +46,13 @@ issue of the monorepo, where those issues live.
   per day. `.github/workflows/notas-archivo.yml` builds the previous month on the 1st and folds a
   closed year on 1 January; `scripts/reparar_notas_archivo.py` refills the days SIDOF lost from
   the website and uploads nothing (a human runs `gh release upload ... --clobber`).
-- **The release's owner.** The archive still lives in `INGEOTEC/LegalIA`, where it was first
-  built: `dofjson.titulos.DEFAULT_RELEASE_REPOSITORY` names it, and the environment variable
-  `DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`, read on every call by `release_repository`)
-  points the lookup at another owner, so a copy of the release is verified against its new home
-  before the default moves. Changing the default is a release of `dofjson`. Until the copy, the
-  workflow's `schedule:` is off (`workflow_dispatch` only) so this repository does not start a
-  second archive while the monorepo's copy of the workflow keeps publishing.
+- **The release's owner.** This repository owns the release:
+  `dofjson.titulos.DEFAULT_RELEASE_REPOSITORY` is `legistlan/dofjson`, and the environment
+  variable `DOFJSON_RELEASE_REPOSITORY` (`<owner>/<name>`, read on every call by
+  `release_repository`) points the lookup at a mirror of the release held elsewhere. The release
+  was copied here once, byte for byte, with `scripts/copiar_notas_archivo.py` (the source is a
+  required argument; the script names no repository), and the workflow's `schedule:` is on
+  (`0 9 1 * *`). Changing the default is a release of `dofjson`.
 - **The cache.** `dofjson.titulos.CACHE_DIR` (platformdirs: `~/.cache/dofjson` on Linux) is where
   `download_dof_assets` writes and every reader reads; it is this package's alone, never shared
   with `nota2md`'s. `cache_dir=None` skips it for one call; `SIN_CACHE_DIR` is the sentinel that
@@ -81,9 +81,9 @@ no overlapping page:
   the verified ones. `tests/test_docs.py` keeps `website/pages/cli.qmd` naming every CLI option and
   every `dofjson/*.py` module documented by exactly one `automodule`.
 
-Links to `INGEOTEC/LegalIA` (the monorepo, its issues and the `notas-archivo` release) are current
-until each moves; a link to a legistlan package or its documentation never points at INGEOTEC or
-Read the Docs, and `tests/test_docs.py` guards the dead URLs.
+Nothing in the tree names the former organization or the monorepo this package was extracted from:
+provenance is said without naming, and links point at legistlan (never at Read the Docs).
+`tests/test_docs.py` guards it, case-insensitively, on every tracked file.
 
 ## Commands
 

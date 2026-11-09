@@ -20,7 +20,7 @@ author = "legistlan"
 
 # The repository is the package, so there is a single version here -- kept as
 # the same |dofjson_version| substitution the page used while it was one page
-# of the LegalIA monorepo's site.
+# of the monorepo's site it was extracted from.
 rst_epilog = f"""
 .. |dofjson_version| replace:: {dofjson.__version__}
 """

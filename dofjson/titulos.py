@@ -51,15 +51,15 @@ import requests
 
 #: The GitHub release that holds the archive, and the repository that owns it
 #: as ``<owner>/<name>`` when `RELEASE_REPOSITORY_VARIABLE` is not set:
-#: ``INGEOTEC/LegalIA``, the monorepo this package was extracted from, where
-#: the release still lives. The default changes to ``legistlan/dofjson`` in
-#: the release of dofjson that follows the archive's copy there.
+#: ``legistlan/dofjson``, this package's own repository, which owns the
+#: release (copied there once, from the monorepo this package was extracted
+#: from, by ``scripts/copiar_notas_archivo.py``).
 RELEASE_TAG = "notas-archivo"
-DEFAULT_RELEASE_REPOSITORY = "INGEOTEC/LegalIA"
+DEFAULT_RELEASE_REPOSITORY = "legistlan/dofjson"
 
-#: Environment variable that names another owner of the release
-#: (``<owner>/<name>``), read at call time by `release_repository`, so a copy
-#: of the release is verified against its new owner before the default moves.
+#: Environment variable that points the lookup at a mirror of the release
+#: (another ``<owner>/<name>`` holding a ``notas-archivo`` release of the same
+#: shape), read at call time by `release_repository`.
 RELEASE_REPOSITORY_VARIABLE = "DOFJSON_RELEASE_REPOSITORY"
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; DOF-JSON-Client/1.0)",
