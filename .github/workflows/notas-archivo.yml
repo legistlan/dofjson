@@ -12,15 +12,10 @@ name: Archivo de notas del DOF
 # notas del 1 al 31 de julio de 2026. El 1 de enero de 2027 genera
 # `notas-2026.tgz` con todo 2026 y elimina `notas-2026-01.tgz` … `-12.tgz`.
 
-# The schedule is off until the `notas-archivo` release is copied from
-# INGEOTEC/LegalIA, where the archive still lives, to this repository (phase 4
-# of the migration plan): until then the monorepo's copy of this workflow keeps
-# publishing there, and a scheduled run here would start a second, partial
-# archive. Phase 4 restores the `schedule:` block below as it was.
 on:
-  # schedule:
-  #   # 09:00 UTC (03:00 en Ciudad de México) del día 1 de cada mes.
-  #   - cron: "0 9 1 * *"
+  schedule:
+    # 09:00 UTC (03:00 en Ciudad de México) del día 1 de cada mes.
+    - cron: "0 9 1 * *"
   workflow_dispatch:
     inputs:
       target_month:
